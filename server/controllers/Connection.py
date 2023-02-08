@@ -1,16 +1,14 @@
 from flask_restful import Resource, request
 from flask import g, jsonify
 from marshmallow import Schema, fields
-from lib.util.Password import check_password
-from lib.util.JWTHelper import encode_auth_token
+import uuid
 
 
 class ConnectionController(Resource):
 
     def get(self):
         cursor = g.db.cursor()
-        cursor.execute(
-            "SELECT connection_id , username , instance_name FROM connections")
+        cursor.execute("SELECT * FROM connections")
         connection = cursor.fetchall()
         g.db.close()
         return jsonify(connection)
@@ -20,10 +18,9 @@ class ConnectionController(Resource):
         data = request.json
 
         class Validator(Schema):
-            username = fields.Str(required=True)
-            password = fields.Str(required=True)
             connection_id = fields.Str(required=True)
             instance_id = fields.Str(required=True)
+            secret = fields.Str(required=True)
 
         schema = Validator()
         errors = schema.validate(data)
@@ -44,23 +41,74 @@ class ConnectionController(Resource):
 
         conn = connection[0]
 
-        if not data['username'] == conn[1]:
-            return {
-                "message":
-                "Invalid connection credentials. Username or password incorrect!"
-            }, 400
-
-        if not check_password(data['password'], conn[2]):
-            return {
-                "message":
-                "Invalid connection credentials. Username or password incorrect!"
-            }, 400
-
-        if not data['instance_id'] == conn[3]:
+        if not data['instance_id'] == conn[1]:
             return {
                 "message": "Invalid connection credentials. Invalid instance!"
             }, 400
 
-        # genarate jwt token
-        token = encode_auth_token(data['connection_id'])
-        return {"connection": conn, "token": token}, 200
+        if not data['secret'] == conn[2]:
+            return {"message": "Invalid connection credentials"}, 400
+
+        return {"connection": conn}, 200
+
+
+class CrudConnectionController(Resource):
+
+    def post(self):
+
+        data = request.json
+
+        class Validator(Schema):
+            instance_id = fields.Str(required=True)
+
+        schema = Validator()
+        errors = schema.validate(data)
+        if errors:
+            return {"message": errors}, 400
+
+        secret = uuid.uuid4().hex
+        connection_id = uuid.uuid4().hex
+
+        g.db.execute("""
+            INSERT INTO connections(connection_id , instance_name , secret)
+            VALUES('""" + connection_id + """' , '""" + data['instance_id'] +
+                     """' , '""" + secret + """')
+        """)
+
+        g.db.commit()
+
+        g.db.close()
+        # create new instance from core
+
+        return {
+            "message": "New instance created!",
+        }, 200
+
+    def delete(self):
+
+        data = request.json
+
+        class Validator(Schema):
+            instance_name = fields.Str(required=True)
+
+        schema = Validator()
+        errors = schema.validate(data)
+        if errors:
+            return {"message": errors}, 400
+
+        connection = g.db.execute(
+            "SELECT * FROM connections WHERE instance_name = '" +
+            data['instance_name'] + "' LIMIT 1")
+        connection = connection.fetchall()
+
+        if connection == []:
+            return {"message": "No valid connection found!"}, 404
+
+        g.db.execute("DELETE FROM connections WHERE instance_name = '" +
+                     data['instance_name'] + "'")
+        g.db.commit()
+        g.db.close()
+
+        # delete instance from core
+
+        return {"message": "Instance deleted successfully!"}, 200

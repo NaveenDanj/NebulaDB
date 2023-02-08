@@ -1,5 +1,5 @@
-from flask import Flask, request
-from flask_restful import Api, Resource
+from flask import Flask
+from flask_restful import Api
 from server.controllers.Connection import ConnectionController
 import sqlite3
 from flask import g
@@ -28,18 +28,20 @@ def teardown_request(exception):
 
 
 @app.route('/')
-def hello_world():
+def index():
 
     return {
         "message":
         "Welcome to NebulaDB",
         "server-info":
-        'Welcome to my database server!\nServer information:\n{}'.format(
-            app.config)
+        'Welcome to NebulaDB!\nServer information:\n{}'.format(app.config)
     }, 200
 
 
 api.add_resource(ConnectionController, '/api/connection')
+
+
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=8300)

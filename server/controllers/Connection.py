@@ -1,4 +1,4 @@
-from flask_restful import Resource
+from flask_restful import Resource, request
 from flask import g, jsonify
 
 
@@ -13,4 +13,6 @@ class ConnectionController(Resource):
         return jsonify(connection)
 
     def post(self):
-        return {"response": "OK"}, 200
+
+        data = request.json
+        return {"response": "OK", "data": data}, 200

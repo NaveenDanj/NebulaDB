@@ -37,3 +37,6 @@ class Connection:
 
     def get_connection_status(self):
         return self.CONNECTION_ESTABLISHED
+
+    def get_instance(self):
+        return self.Instance

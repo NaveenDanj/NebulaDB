@@ -3,6 +3,7 @@ from flask import g, jsonify
 from marshmallow import Schema, fields
 import uuid
 
+from lib.core.Instance import Instance
 
 class ConnectionController(Resource):
 
@@ -87,6 +88,13 @@ class CrudConnectionController(Resource):
 
         g.db.close()
         # create new instance from core
+
+        instance = Instance({})
+        instance.create_instance({
+            "instance_name" : data['instance_name'],
+            "connection_id" : connection_id,
+            "secret" : secret
+        })
 
         return {
             "message": "New instance created!",

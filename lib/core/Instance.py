@@ -1,6 +1,5 @@
 import json
 import os
-import pathlib
 import shutil
 
 
@@ -49,7 +48,6 @@ class Instance:
                 del meta_data['instances'][index]
 
         with open('data/meta.json', 'w', encoding='utf-8') as f:
-            data = {"instance_data": instance_dict, "collections": []}
             json.dump(meta_data, f, ensure_ascii=False, indent=4)
 
         return path

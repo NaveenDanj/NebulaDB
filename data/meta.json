@@ -1,3 +1,14 @@
 {
-    "instances": []
+    "instances": [
+        {
+            "instance_name": "default_instance_4",
+            "connection_id": "e291770d77a54fe8b330a0c5807662f5",
+            "secret": "3cbc3a7f5ffc4acf8da39f21c40c91d2"
+        },
+        {
+            "instance_name": "default_instance_5",
+            "connection_id": "e70a22d21c5d4767aaf80035aa24a671",
+            "secret": "1a6055818ca94ee898dc77401b4fe435"
+        }
+    ]
 }

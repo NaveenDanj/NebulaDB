@@ -2,6 +2,7 @@ from flask_restful import Resource, request
 from flask import g, jsonify
 from marshmallow import Schema, fields
 from lib.core.Connection import Connection
+from lib.core.Collection import Collection
 
 
 class TestController(Resource):
@@ -10,14 +11,26 @@ class TestController(Resource):
 
         nebulaDBConnection = Connection({
             "connection_id":
-            "bffd5abbb5804734bee56b4b56b21c59",
+            "e291770d77a54fe8b330a0c5807662f5",
             "instance_name":
-            "default_instance",
+            "default_instance_4",
             "secret":
-            "6d62d65af77b4ba993642b5d13bbab88"
+            "3cbc3a7f5ffc4acf8da39f21c40c91d2"
         })
 
         nebulaDBConnection.connect()
+
+        collection = Collection(nebulaDBConnection)
+        collection.create_collection({
+            "collection_name": "new_collection",
+            "schema": {
+                "id": "number",
+                "username": "string",
+                "password": "string",
+                "wage": "number",
+                "isMarried": "boolean",
+            }
+        })
 
         return {
             "message": nebulaDBConnection.get_connection_status(),

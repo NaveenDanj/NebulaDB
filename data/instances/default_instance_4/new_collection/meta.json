@@ -1,0 +1,10 @@
+{
+    "collection_name": "new_collection",
+    "schema": {
+        "id": "number",
+        "username": "string",
+        "password": "string",
+        "wage": "number",
+        "isMarried": "boolean"
+    }
+}

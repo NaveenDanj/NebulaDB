@@ -19,7 +19,7 @@ class ConnectionController(Resource):
 
         class Validator(Schema):
             connection_id = fields.Str(required=True)
-            instance_id = fields.Str(required=True)
+            instance_name = fields.Str(required=True)
             secret = fields.Str(required=True)
 
         schema = Validator()
@@ -41,7 +41,7 @@ class ConnectionController(Resource):
 
         conn = connection[0]
 
-        if not data['instance_id'] == conn[1]:
+        if not data['instance_name'] == conn[1]:
             return {
                 "message": "Invalid connection credentials. Invalid instance!"
             }, 400
@@ -59,19 +59,27 @@ class CrudConnectionController(Resource):
         data = request.json
 
         class Validator(Schema):
-            instance_id = fields.Str(required=True)
+            instance_name = fields.Str(required=True)
 
         schema = Validator()
         errors = schema.validate(data)
         if errors:
             return {"message": errors}, 400
 
+        conn = g.db.execute(
+            "SELECT * FROM connections WHERE instance_name = '" +
+            data['instance_name'] + "' LIMIT 1")
+        conn = conn.fetchall()
+
+        if conn != []:
+            return {"message": "Instance name already taken"}, 400
+
         secret = uuid.uuid4().hex
         connection_id = uuid.uuid4().hex
 
         g.db.execute("""
             INSERT INTO connections(connection_id , instance_name , secret)
-            VALUES('""" + connection_id + """' , '""" + data['instance_id'] +
+            VALUES('""" + connection_id + """' , '""" + data['instance_name'] +
                      """' , '""" + secret + """')
         """)
 

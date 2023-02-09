@@ -5,6 +5,7 @@ import uuid
 
 from lib.core.Instance import Instance
 
+
 class ConnectionController(Resource):
 
     def get(self):
@@ -91,9 +92,9 @@ class CrudConnectionController(Resource):
 
         instance = Instance({})
         instance.create_instance({
-            "instance_name" : data['instance_name'],
-            "connection_id" : connection_id,
-            "secret" : secret
+            "instance_name": data['instance_name'],
+            "connection_id": connection_id,
+            "secret": secret
         })
 
         return {
@@ -126,5 +127,7 @@ class CrudConnectionController(Resource):
         g.db.close()
 
         # delete instance from core
+        instance = Instance({})
+        instance.delete_instance({"instance_name": data['instance_name']})
 
         return {"message": "Instance deleted successfully!"}, 200

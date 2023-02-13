@@ -8,6 +8,8 @@ class Collection:
 
     def __init__(self, instance):
         self.Instance = instance
+        self.schema = None
+        self.collectionName = None
 
     def create_collection(self, schema):
         self.verify_instance()
@@ -22,10 +24,16 @@ class Collection:
             if not os.path.exists(directory):
                 os.makedirs(directory)
 
-            update_doc(path + '/meta.json', {
-                "collection_name": collection_name,
-                "schema": schema['schema']
-            })
+            update_doc(
+                path + '/meta.json', {
+                    "collection_name": collection_name,
+                    "schema": schema['schema'],
+                    "mapper": [{
+                        "1.json": [0, 1000, False]
+                    }]
+                })
+
+            self.schema = schema['schema']
 
             # get the collection data from instance meta
             data = get_docs('data/instances/' +
@@ -42,6 +50,11 @@ class Collection:
                 "collection_name": collection_name,
                 "schema": schema['schema']
             })
+
+            update_doc(
+                'data/instances/' +
+                self.Instance.credential_dict['instance_name'] + "/" +
+                collection_name + "/1.json", {})
 
             update_doc(
                 'data/instances/' +

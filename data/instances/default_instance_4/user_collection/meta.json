@@ -1,0 +1,19 @@
+{
+    "collection_name": "user_collection",
+    "schema": {
+        "id": "number",
+        "username": "string",
+        "password": "string",
+        "wage": "number",
+        "isMarried": "boolean"
+    },
+    "mapper": [
+        {
+            "1.json": [
+                0,
+                1000,
+                false
+            ]
+        }
+    ]
+}

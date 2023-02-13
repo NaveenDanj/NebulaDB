@@ -1,6 +1,7 @@
 from flask_restful import Resource
 from lib.core.Connection import Connection
 from lib.core.Collection import Collection
+from lib.core.Document import Document
 
 
 class TestController(Resource):
@@ -18,9 +19,17 @@ class TestController(Resource):
         nebulaDBConnection.connect()
 
         collection = Collection(nebulaDBConnection)
+        collection.schema = {
+            "id": "number",
+            "username": "string",
+            "password": "string",
+            "wage": "number",
+            "isMarried": "boolean",
+        }
+        collection.collectionName = 'user_collection'
 
         # collection.create_collection({
-        #     "collection_name": "new_collection",
+        #     "collection_name": "user_collection",
         #     "schema": {
         #         "id": "number",
         #         "username": "string",
@@ -30,7 +39,20 @@ class TestController(Resource):
         #     }
         # })
 
-        collection.delete_collection('new_collection')
+        doc = Document(
+            collection, {
+                "id": 123,
+                "username": "naveendan",
+                "password": "naveendan830",
+                "wage": 12000.00,
+                "isMarried": False,
+            }, nebulaDBConnection)
+
+        ret = doc.create()
+
+        return ret
+
+        # collection.delete_collection('user_collection')
 
         return {
             "message": nebulaDBConnection.get_connection_status(),

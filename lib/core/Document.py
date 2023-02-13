@@ -6,10 +6,11 @@ import json
 class Document:
 
     def __init__(self, collection, DocumentSchema, Instance):
-        self.documentSchema = DocumentSchema
+        self.data = DocumentSchema
         self.instance = Instance
         self.collection = collection
         self._id = None
+        self.filepath = None
 
     def create(self):
         self.verifySchema()
@@ -21,15 +22,15 @@ class Document:
         path = 'data/instances/' + self.instance.Instance.Instance[
             'instance_name'] + '/' + self.collection.collectionName + "/" + doc_holder[
                 'filename']
-        self.documentSchema['_id'] = self._id
+        self.data['_id'] = self._id
 
         f = open(path)
         meta_data = json.load(f)
-        meta_data[self._id] = self.documentSchema
+        meta_data[self._id] = self.data
 
         update_doc(path, meta_data)
-
-        return self.documentSchema
+        self.filepath = path
+        return self.data
 
     def delete(self):
         data = self.check_document_exists(self._id)
@@ -53,7 +54,7 @@ class Document:
         for key in self.collection.schema:
             keys.append(key)
 
-        for key in self.documentSchema:
+        for key in self.data:
             if key not in keys:
                 raise Exception("Missing key : ", key)
 

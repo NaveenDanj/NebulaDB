@@ -50,8 +50,7 @@ class TestController(Resource):
 
         # ret = doc.create()
         doc._id = '73c5c088f3434fbcbb221bb8ad2bb12d'
-        # ret = doc.delete()
-        ret = doc.deleteAll()
+        ret = doc.delete()
 
         return ret
 

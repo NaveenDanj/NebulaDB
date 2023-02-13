@@ -1,5 +1,7 @@
 import os
 from lib.util.IO import update_doc, get_docs
+import shutil
+import json
 
 
 class Collection:
@@ -14,34 +16,73 @@ class Collection:
         path = 'data/instances/' + self.Instance.credential_dict[
             'instance_name'] + '/' + collection_name
 
-        directory = os.path.dirname(path)
-        if not os.path.exists(directory):
-            os.makedirs(directory)
+        try:
 
-        update_doc(path + '/meta.json', {
-            "collection_name": collection_name,
-            "schema": schema['schema']
-        })
+            directory = os.path.dirname(path)
+            if not os.path.exists(directory):
+                os.makedirs(directory)
 
-        # get the collection data from instance meta
-        data = get_docs('data/instances/' +
-                        self.Instance.credential_dict['instance_name'] + "/" +
-                        self.Instance.credential_dict['instance_name'] +
-                        ".json")
+            update_doc(path + '/meta.json', {
+                "collection_name": collection_name,
+                "schema": schema['schema']
+            })
 
-        for index, item in enumerate(data['collections']):
-            if item['collection_name'] == collection_name:
-                raise Exception('Collection name is already taken!')
+            # get the collection data from instance meta
+            data = get_docs('data/instances/' +
+                            self.Instance.credential_dict['instance_name'] +
+                            "/" +
+                            self.Instance.credential_dict['instance_name'] +
+                            ".json")
 
-        data['collections'].append({
-            "collection_name": collection_name,
-            "schema": schema['schema']
-        })
+            for index, item in enumerate(data['collections']):
+                if item['collection_name'] == collection_name:
+                    raise Exception('Collection name is already taken!')
 
-        update_doc(
-            'data/instances/' +
-            self.Instance.credential_dict['instance_name'] + "/" +
-            self.Instance.credential_dict['instance_name'] + ".json", data)
+            data['collections'].append({
+                "collection_name": collection_name,
+                "schema": schema['schema']
+            })
+
+            update_doc(
+                'data/instances/' +
+                self.Instance.credential_dict['instance_name'] + "/" +
+                self.Instance.credential_dict['instance_name'] + ".json", data)
+
+            return True
+
+        except Exception as e:
+
+            raise Exception('Error while creating new collection')
+
+    def delete_collection(self, collection_name):
+        collection_name = collection_name
+        path = 'data/instances/' + self.Instance.credential_dict[
+            'instance_name'] + '/' + collection_name
+
+        try:
+
+            shutil.rmtree(path)
+
+            f = open('data/instances/' +
+                     self.Instance.credential_dict['instance_name'] + '/' +
+                     self.Instance.credential_dict['instance_name'] + '.json')
+            meta_data = json.load(f)
+
+            for index, item in enumerate(meta_data['collections']):
+                if item['collection_name'] == collection_name:
+                    del meta_data['collections'][index]
+
+            update_doc(
+                'data/instances/' +
+                self.Instance.credential_dict['instance_name'] + '/' +
+                self.Instance.credential_dict['instance_name'] + '.json',
+                meta_data)
+
+            return True
+
+        except Exception as e:
+
+            raise Exception("Error while deleting collection")
 
     def verify_instance(self):
         if not self.Instance.CONNECTION_ESTABLISHED:

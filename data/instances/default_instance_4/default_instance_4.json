@@ -1,27 +1,19 @@
 {
-  "instance_data": {
-    "instance_name": "default_instance_4",
-    "connection_id": "e291770d77a54fe8b330a0c5807662f5",
-    "secret": "3cbc3a7f5ffc4acf8da39f21c40c91d2"
-  },
-  "collections": [
-    {
-      "collection_name": "user_collection",
-      "schema": {
-        "id": "number",
-        "username": "string",
-        "password": "string",
-        "wage": "number",
-        "isMarried": "boolean"
-      }
+    "instance_data": {
+        "instance_name": "default_instance_4",
+        "connection_id": "e291770d77a54fe8b330a0c5807662f5",
+        "secret": "3cbc3a7f5ffc4acf8da39f21c40c91d2"
     },
-    {
-      "collection_name": "cars",
-      "schema": {
-        "brand": "string",
-        "year": "string",
-        "model": "string"
-      }
-    }
-  ]
+    "collections": [
+        {
+            "collection_name": "user_collection",
+            "schema": {
+                "id": "number",
+                "username": "string",
+                "password": "string",
+                "wage": "number",
+                "isMarried": "boolean"
+            }
+        }
+    ]
 }

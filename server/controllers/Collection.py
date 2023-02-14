@@ -57,4 +57,39 @@ class CollectionController(Resource):
 
     @EnsureConnection
     def delete(self):
-        pass
+
+        data = request.json
+
+        class Validator(Schema):
+            collection_name = fields.Str(required=True)
+
+        schema = Validator()
+        errors = schema.validate(data)
+        if errors:
+            return {"message": errors}, 400
+
+        # check collection exists!
+        try:
+            headers = request.headers
+
+            nebulaDBConnection = Connection({
+                "connection_id":
+                headers["connection_id"],
+                "instance_name":
+                headers["instance_name"],
+                "secret":
+                headers["secret"]
+            })
+            nebulaDBConnection.connect()
+            collection = Collection(nebulaDBConnection)
+
+            collection.delete_collection(data['collection_name'])
+
+            return {
+                "message": "Collection deleted successfully",
+            }, 200
+
+        except Exception as e:
+            return {
+                "message": "Error while creating a collection",
+            }, 400

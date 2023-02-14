@@ -4,41 +4,57 @@ from marshmallow import Schema, fields
 import uuid
 
 from lib.core.Collection import Collection
+from lib.core.Connection import Connection
+from server.middleware.EnsureConnection import EnsureConnection
 
 
 class CollectionController(Resource):
 
+    @EnsureConnection
     def post(self):
 
         data = request.json
 
         class Validator(Schema):
             collection_name = fields.Str(required=True)
-            instance_name = fields.Str(required=True)
-            secret = fields.Str(required=True)
+            schema = fields.Dict(required=True)
 
         schema = Validator()
         errors = schema.validate(data)
         if errors:
             return {"message": errors}, 400
 
-        collection = Collection(nebulaDBConnection)
-        # collection.schema = {
-        #     "id": "number",
-        #     "username": "string",
-        #     "password": "string",
-        #     "wage": "number",
-        #     "isMarried": "boolean",
-        # }
-        # collection.collectionName = 'user_collection'
+        try:
+            headers = request.headers
 
-        # collection.create_collection({
-        #     "collection_name": "user_collection",
-        #     "schema": {
-        #         "id": "number",
-        #         "username": "string",
-        #         "password": "string",
-        #         "wage": "number",
-        #         "isMarried": "boolean",
-        #     }
-        # })
+            nebulaDBConnection = Connection({
+                "connection_id":
+                headers["connection_id"],
+                "instance_name":
+                headers["instance_name"],
+                "secret":
+                headers["secret"]
+            })
+            nebulaDBConnection.connect()
+            collection = Collection(nebulaDBConnection)
+
+            collection.create_collection({
+                "collection_name":
+                data['collection_name'],
+                "schema":
+                data['schema']
+            })
+
+            return {
+                "message": "New collection created!",
+                "collection": data['schema']
+            }, 200
+
+        except Exception as e:
+            return {
+                "message": "Error while creating a collection",
+            }, 400
+
+    @EnsureConnection
+    def delete(self):
+        pass

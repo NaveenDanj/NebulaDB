@@ -2,27 +2,16 @@ from flask_restful import Resource, request
 from flask import g, jsonify
 from marshmallow import Schema, fields
 import uuid
-
 from lib.core.Instance import Instance
 
 
-def add_header(func):
+def EnsureConnection(func):
 
     def wrapper(*args, **kwargs):
-        response = func(*args, **kwargs)
-        response.headers['X-Custom-Header'] = 'Value'
-
         data = request.headers
 
-        class Validator(Schema):
-            connection_id = fields.Str(required=True)
-            instance_name = fields.Str(required=True)
-            secret = fields.Str(required=True)
-
-        schema = Validator()
-        errors = schema.validate(data)
-        if errors:
-            return {"message": errors}, 400
+        if 'connection_id' not in data or 'instance_name' not in data or 'secret' not in data:
+            return {'messages': 'Invalid connection credentials'}, 400
 
         cursor = g.db.cursor()
         cursor.execute("SELECT * FROM connections WHERE connection_id = '" +

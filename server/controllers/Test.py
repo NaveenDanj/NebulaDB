@@ -2,6 +2,7 @@ from flask_restful import Resource
 from lib.core.Connection import Connection
 from lib.core.Collection import Collection
 from lib.core.Document import Document
+from lib.core.Query import Query
 
 
 class TestController(Resource):
@@ -19,14 +20,14 @@ class TestController(Resource):
         nebulaDBConnection.connect()
 
         collection = Collection(nebulaDBConnection)
-        collection.schema = {
-            "id": "number",
-            "username": "string",
-            "password": "string",
-            "wage": "number",
-            "isMarried": "boolean",
-        }
-        collection.collectionName = 'user_collection'
+        # collection.schema = {
+        #     "id": "number",
+        #     "username": "string",
+        #     "password": "string",
+        #     "wage": "number",
+        #     "isMarried": "boolean",
+        # }
+        # collection.collectionName = 'user_collection'
 
         # collection.create_collection({
         #     "collection_name": "user_collection",
@@ -39,23 +40,28 @@ class TestController(Resource):
         #     }
         # })
 
-        doc = Document(
-            collection, {
-                "id": 123,
-                "username": "naveendan",
-                "password": "naveendan830",
-                "wage": 12000.00,
-                "isMarried": False,
-            }, nebulaDBConnection)
+        # doc = Document(
+        #     collection, {
+        #         "id": 123,
+        #         "username": "naveendan",
+        #         "password": "naveendan830",
+        #         "wage": 12000.00,
+        #         "isMarried": False,
+        #     }, nebulaDBConnection)
 
-        # ret = doc.create()
-        doc._id = '73c5c088f3434fbcbb221bb8ad2bb12d'
-        ret = doc.delete()
+        # # ret = doc.create()
+        # doc._id = '73c5c088f3434fbcbb221bb8ad2bb12d'
+        # ret = doc.delete()
 
-        return ret
+        # return ret
 
         # collection.delete_collection('user_collection')
 
+        query = Query(nebulaDBConnection)
+        query.set_collection('user_collection')
+        data_ = query.where('username', '==', 'naveendanj').data
+        query.where('username', '==', 'naveendanj').delete()
         return {
-            "message": nebulaDBConnection.get_connection_status(),
+            # "message": nebulaDBConnection.get_connection_status(),
+            "data": data_
         }, 200

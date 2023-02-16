@@ -1,4 +1,5 @@
 import json
+from lib.util.IO import update_doc
 
 
 class Query:
@@ -9,7 +10,7 @@ class Query:
         self.data = None
         self.schema = None
 
-    def collection(self, collection_name):
+    def set_collection(self, collection_name):
         self.collection = collection_name
 
         f = open('data/instances/' +
@@ -24,7 +25,6 @@ class Query:
     def get_doc_by_id(self, _id):
         data = self.check_document_exists(_id)
         self.data = data['data']
-        return self
 
     def where(self, key, op, val):
         self.__validate_schema(key)
@@ -32,19 +32,19 @@ class Query:
         if op not in ['==', '!=', '>', '<', '<=', '=>', 'like']:
             raise Exception('Invalid operator : ', op)
 
-        if key == '==':
+        if op == '==':
             self.__get_docs_by_where_condition_equals(key, val)
-        elif key == '!=':
+        elif op == '!=':
             self.__get_docs_by_where_condition_not_equals(key, val)
-        elif key == '>':
+        elif op == '>':
             self.__get_docs_by_where_condition_grater_than(key, val)
-        elif key == '<':
+        elif op == '<':
             self.__get_docs_by_where_condition_less_than(key, val)
-        elif key == '<=':
+        elif op == '<=':
             self.__get_docs_by_where_condition_less_than_equals(key, val)
-        elif key == '=>':
+        elif op == '=>':
             self.__get_docs_by_where_condition_grater_than_equals(key, val)
-        elif key == 'like':
+        elif op == 'like':
             pass
 
         return self
@@ -67,17 +67,34 @@ class Query:
         docs = []
 
         for _file in files:
-            filename = list(_file.keys())[0]
+            filename = list(_file.values())[0]
 
             f = open('data/instances/' +
                      self.instance.Instance.Instance['instance_name'] + '/' +
                      self.collection + '/' + filename)
 
             meta_data = json.load(f)
-            docs = docs + meta_data
+            docs = docs + list(meta_data.values())
 
         self.data = docs
         return self
+
+    def delete(self):
+
+        for item in self.data:
+            data = self.check_document_exists(item['_id'])
+
+            if data == False:
+                raise Exception("Document not found!")
+
+            f = open(data['filepath'])
+            meta_data = json.load(f)
+
+            del meta_data[item['_id']]
+
+            update_doc(data['filepath'], meta_data)
+
+        return True
 
     def get_all_document_holders(self):
 
@@ -125,7 +142,7 @@ class Query:
 
         f = open('data/instances/' +
                  self.instance.Instance.Instance['instance_name'] + '/' +
-                 self.collection.collectionName + '/meta.json')
+                 self.collection + '/meta.json')
         meta_data = json.load(f)
 
         for item in meta_data['mapper']:
@@ -133,7 +150,7 @@ class Query:
 
             f = open('data/instances/' +
                      self.instance.Instance.Instance['instance_name'] + '/' +
-                     self.collection.collectionName + '/' + filename)
+                     self.collection + '/' + filename)
 
             meta_data = json.load(f)
 
@@ -142,7 +159,7 @@ class Query:
                     "filepath":
                     'data/instances/' +
                     self.instance.Instance.Instance['instance_name'] + '/' +
-                    self.collection.collectionName + '/' + filename,
+                    self.collection + '/' + filename,
                     "data":
                     meta_data[_id],
                 }
@@ -154,16 +171,13 @@ class Query:
             raise Exception('Schema validation error! key :', key,
                             " not found.")
 
-        return True
-
     def __get_docs_by_where_condition_equals(self, key, val):
-
         files = self.get_all_document_holders()
 
         docs = []
 
         for _file in files:
-            filename = list(_file.keys())[0]
+            filename = list(_file.values())[0]
 
             f = open('data/instances/' +
                      self.instance.Instance.Instance['instance_name'] + '/' +
@@ -172,9 +186,8 @@ class Query:
             meta_data = json.load(f)
 
             for item in meta_data:
-
-                if item[key] == val:
-                    docs.append(item)
+                if meta_data[item][key] == val:
+                    docs.append(meta_data[item])
 
         self.data = docs
         return self
@@ -186,7 +199,7 @@ class Query:
         docs = []
 
         for _file in files:
-            filename = list(_file.keys())[0]
+            filename = list(_file.values())[0]
 
             f = open('data/instances/' +
                      self.instance.Instance.Instance['instance_name'] + '/' +
@@ -196,7 +209,7 @@ class Query:
 
             for item in meta_data:
 
-                if item[key] != val:
+                if meta_data[item][key] != val:
                     docs.append(item)
 
         self.data = docs
@@ -209,7 +222,7 @@ class Query:
         docs = []
 
         for _file in files:
-            filename = list(_file.keys())[0]
+            filename = list(_file.values())[0]
 
             f = open('data/instances/' +
                      self.instance.Instance.Instance['instance_name'] + '/' +
@@ -219,7 +232,7 @@ class Query:
 
             for item in meta_data:
 
-                if item[key] > val:
+                if meta_data[item][key] > val:
                     docs.append(item)
 
         self.data = docs
@@ -232,7 +245,7 @@ class Query:
         docs = []
 
         for _file in files:
-            filename = list(_file.keys())[0]
+            filename = list(_file.values())[0]
 
             f = open('data/instances/' +
                      self.instance.Instance.Instance['instance_name'] + '/' +
@@ -242,7 +255,7 @@ class Query:
 
             for item in meta_data:
 
-                if item[key] < val:
+                if meta_data[item][key] < val:
                     docs.append(item)
 
         self.data = docs
@@ -255,7 +268,7 @@ class Query:
         docs = []
 
         for _file in files:
-            filename = list(_file.keys())[0]
+            filename = list(_file.values())[0]
 
             f = open('data/instances/' +
                      self.instance.Instance.Instance['instance_name'] + '/' +
@@ -265,7 +278,7 @@ class Query:
 
             for item in meta_data:
 
-                if item[key] >= val:
+                if meta_data[item][key] >= val:
                     docs.append(item)
 
         self.data = docs
@@ -278,7 +291,7 @@ class Query:
         docs = []
 
         for _file in files:
-            filename = list(_file.keys())[0]
+            filename = list(_file.values())[0]
 
             f = open('data/instances/' +
                      self.instance.Instance.Instance['instance_name'] + '/' +
@@ -288,7 +301,7 @@ class Query:
 
             for item in meta_data:
 
-                if item[key] <= val:
+                if meta_data[item][key] <= val:
                     docs.append(item)
 
         self.data = docs

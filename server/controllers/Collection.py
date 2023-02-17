@@ -5,6 +5,7 @@ import uuid
 
 from lib.core.Collection import Collection
 from lib.core.Connection import Connection
+from lib.core.Util import Util
 from server.middleware.EnsureConnection import EnsureConnection
 
 
@@ -53,6 +54,34 @@ class CollectionController(Resource):
         except Exception as e:
             return {
                 "message": "Error while creating a collection",
+            }, 400
+
+    @EnsureConnection
+    def get(self):
+
+        try:
+            headers = request.headers
+
+            nebulaDBConnection = Connection({
+                "connection_id":
+                headers["connection_id"],
+                "instance_name":
+                headers["instance_name"],
+                "secret":
+                headers["secret"]
+            })
+            nebulaDBConnection.connect()
+            util = Util(nebulaDBConnection)
+
+            collections = util.get_all_collections()
+
+            return {
+                "collections": collections,
+            }, 200
+
+        except Exception as e:
+            return {
+                "message": "Error while fetching collections",
             }, 400
 
     @EnsureConnection
